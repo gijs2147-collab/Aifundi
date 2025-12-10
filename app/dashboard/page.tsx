@@ -19,6 +19,7 @@ import {
   Percent,
 } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
 
 // Mock data
 const stats = [
@@ -42,18 +43,58 @@ const stats = [
   },
 ];
 
-interface Activity {
-  date: string;
-  type: string;
-  amount: string;
-  status: string;
+type Profile = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  created_at: string | null;
+  [key: string]: any;
+};
+
+async function getRecentUsers() {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (error) {
+    console.error("Error fetching recent users:", error);
+    return [];
+  }
+
+  return (data as Profile[]) || [];
 }
 
-const recentActivity: Activity[] = [];
+export default async function DashboardPage() {
+  const supabase = await createClient();
+  
+  // Get current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export default function DashboardPage() {
-  const userName = "Jan de Vries";
-  const kycCompleted = false; // Mock: KYC nog niet afgerond
+  // Get user profile
+  let userName = "Gebruiker";
+  let kycCompleted = false;
+  
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name, kyc_status")
+      .eq("id", user.id)
+      .single();
+
+    if (profile) {
+      userName = profile.full_name || "Gebruiker";
+      kycCompleted = profile.kyc_status === "verified";
+    }
+  }
+
+  // Get recent users
+  const recentUsers = await getRecentUsers();
 
   return (
     <div className="space-y-6">
@@ -116,48 +157,52 @@ export default function DashboardPage() {
         </Alert>
       )}
 
-      {/* Recent Activity Table */}
+      {/* Recent Users Table */}
       <Card className="border-border bg-card">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-foreground">
-            Recente Activiteit
+            Recente Gebruikers
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {recentActivity.length === 0 ? (
+          {recentUsers.length === 0 ? (
             <div className="py-12 text-center">
               <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
               <p className="mt-4 text-sm text-muted-foreground">
-                Nog geen activiteit
+                Nog geen gebruikers
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Uw investeringsactiviteit verschijnt hier
+                Nieuwe gebruikers verschijnen hier
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-muted-foreground">Datum</TableHead>
-                  <TableHead className="text-muted-foreground">Type</TableHead>
-                  <TableHead className="text-muted-foreground">Bedrag</TableHead>
-                  <TableHead className="text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-muted-foreground">Naam</TableHead>
+                  <TableHead className="text-muted-foreground">Email</TableHead>
+                  <TableHead className="text-muted-foreground">Registratiedatum</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {recentActivity.map((activity, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="text-foreground">
-                      {activity.date}
+                {recentUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell className="text-foreground font-medium">
+                      {user.full_name || "-"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {activity.type}
-                    </TableCell>
-                    <TableCell className="text-foreground">
-                      {activity.amount}
+                      {user.email || "-"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {activity.status}
+                      {user.created_at
+                        ? new Date(user.created_at).toLocaleDateString("nl-NL", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "-"}
                     </TableCell>
                   </TableRow>
                 ))}
