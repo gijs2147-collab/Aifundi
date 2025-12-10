@@ -42,16 +42,14 @@ const stats = [
   },
 ];
 
-type Activity = {
+interface Activity {
   date: string;
   type: string;
   amount: string;
   status: string;
-};
+}
 
-const recentActivity: Activity[] = [
-  // Leeg voor nu - kan later worden gevuld met mock data
-];
+const recentActivity: Activity[] = [];
 
 export default function DashboardPage() {
   const userName = "Jan de Vries";
