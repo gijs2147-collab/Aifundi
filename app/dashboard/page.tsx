@@ -42,7 +42,14 @@ const stats = [
   },
 ];
 
-const recentActivity = [
+type Activity = {
+  date: string;
+  type: string;
+  amount: string;
+  status: string;
+};
+
+const recentActivity: Activity[] = [
   // Leeg voor nu - kan later worden gevuld met mock data
 ];
 
