@@ -209,7 +209,6 @@ export default function ProfielPage() {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className=""
             >
               <Save className="mr-2 h-4 w-4" />
               {isSaving ? "Opslaan..." : "Wijzigingen opslaan"}
@@ -332,7 +331,6 @@ export default function ProfielPage() {
             <Button
               onClick={handleSave}
               disabled={isSaving}
-              className=""
             >
               <Save className="mr-2 h-4 w-4" />
               {isSaving ? "Opslaan..." : "Voorkeuren opslaan"}
