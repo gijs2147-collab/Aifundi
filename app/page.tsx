@@ -1,112 +1,172 @@
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  LineChart,
+  Lock,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+
+const features = [
+  {
+    icon: ShieldCheck,
+    title: "Strakke governance",
+    description: "KYC, KYB en server-side validatie via Supabase.",
+  },
+  {
+    icon: Lock,
+    title: "Bank-grade security",
+    description: "Versleutelde dataflows en granular access control.",
+  },
+  {
+    icon: LineChart,
+    title: "Institutionele focus",
+    description: "Instappen vanaf €100k met transparante rapportages.",
+  },
+];
+
+const stats = [
+  { label: "Minimum ticket", value: "€100.000" },
+  { label: "Target IRR", value: "10–14%" },
+  { label: "Sectorfocus", value: "consumptief krediet" },
+];
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <main className="relative min-h-screen overflow-hidden">
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+      <div className="relative mx-auto flex max-w-6xl flex-col gap-12 px-6 py-12 lg:py-16">
+        <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
+              Aifundi Capital
+            </p>
+            <p className="text-base text-foreground">
+              investeer in consumptief krediet
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="ghost" className="text-sm text-foreground/80" asChild>
+              <Link href="/login">Inloggen</Link>
+            </Button>
+            <Button variant="ghost" className="text-sm text-foreground/80" asChild>
+              <Link href="/signup">Registreren</Link>
+            </Button>
+            <Button variant="ghost" className="text-sm text-foreground/80" asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+            <Button variant="outline" className="bg-primary/10 text-primary">
+              Contact team
+            </Button>
+          </div>
+        </header>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+        <section className="grid items-center gap-12 lg:grid-cols-2">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm text-primary">
+              <Sparkles className="h-4 w-4" />
+              Private onboarding vanaf €100.000
+            </div>
+            <div className="space-y-4">
+              <h1 className="text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                Investeer in consumptief krediet
+              </h1>
+              <p className="max-w-2xl text-lg text-muted-foreground sm:text-xl">
+                Een modern fintech investeringsplatform met institutionele
+                governance. Volledige onboarding, rapportage en risicobeheer
+                vanuit één veilige omgeving.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button size="lg" className="px-6" asChild>
+                <Link href="/onboarding">
+                  Start Onboarding
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-primary/40 bg-secondary/60 text-primary hover:bg-secondary/80"
+                asChild
+              >
+                <Link href="/strategie">
+                  Bekijk strategie
+                </Link>
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Server-side validatie, gegevensopslag en verificatie via Supabase
+              voor maximale zekerheid en compliance.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {features.map((feature) => (
+                <Card
+                  key={feature.title}
+                  className="border-primary/10 bg-secondary/60 backdrop-blur"
+                >
+                  <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                      <feature.icon className="h-5 w-5" />
+                    </div>
+                    <CardTitle className="text-lg text-foreground">
+                      {feature.title}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground">
+                    {feature.description}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+          <Card className="border-primary/10 bg-secondary/70 backdrop-blur">
+            <CardHeader>
+              <CardTitle className="text-2xl text-foreground">
+                Fonds snapshot
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Gericht op consumptief krediet met bewezen cashflows en
+                aantoonbare groeiambitie.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-3 sm:grid-cols-3">
+                {stats.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-xl border border-primary/10 bg-background/40 px-4 py-3"
+                  >
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      {stat.label}
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-foreground">
+                      {stat.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-xl border border-primary/15 bg-background/50 p-4 text-sm text-muted-foreground">
+                Wij combineren menselijke expertise met automatisering. Alle
+                data wordt server-side gevalideerd; gevoelige informatie verlaat
+                de browser niet zonder versleuteling.
+              </div>
+              <div className="flex items-center justify-between rounded-xl border border-primary/15 bg-background/40 px-4 py-3 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Due diligence venster</p>
+                  <p className="text-foreground">10 werkdagen</p>
+                </div>
+                <div className="flex items-center gap-2 text-primary">
+                  <Lock className="h-4 w-4" />
+                  Versleutelde document flow
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       </div>
     </main>
   );
