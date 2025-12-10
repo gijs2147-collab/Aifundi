@@ -2,13 +2,21 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
+  // Always allow login and signup pages
+  const pathname = request.nextUrl.pathname;
+  if (pathname === "/login" || pathname === "/signup" || pathname === "/") {
+    return NextResponse.next();
+  }
+
   // Check if environment variables are set
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables");
-    // Allow request to continue if env vars are missing (for development)
+    // If env vars are missing, only protect routes that need auth
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
     return NextResponse.next();
   }
 
@@ -65,44 +73,41 @@ export async function middleware(request: NextRequest) {
       }
     );
 
-    // Refresh session if expired - required for Server Components
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    // If there's an error getting user, log it but continue
-    if (error) {
-      console.error("Middleware auth error:", error.message);
-      // Don't block request on auth errors
+    // Get user - don't block on errors
+    let user = null;
+    try {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+      user = authUser;
+    } catch (authError) {
+      // Silently fail - allow request to continue
+      console.error("Auth check failed:", authError);
     }
 
     // Bescherm /dashboard en /admin routes
     if (
-      (request.nextUrl.pathname.startsWith("/dashboard") ||
-        request.nextUrl.pathname.startsWith("/admin")) &&
+      (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) &&
       !user
     ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(new URL("/login", request.url));
     }
 
     // Redirect naar dashboard als al ingelogd en op login/signup pagina
     if (
       user &&
-      (request.nextUrl.pathname === "/login" ||
-        request.nextUrl.pathname === "/signup")
+      (pathname === "/login" || pathname === "/signup")
     ) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
     return response;
   } catch (error) {
-    // If middleware fails, log error and allow request to continue
-    console.error("Middleware error:", error);
+    // If middleware fails completely, allow request to continue
+    // Only block protected routes
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
     return NextResponse.next();
   }
 }

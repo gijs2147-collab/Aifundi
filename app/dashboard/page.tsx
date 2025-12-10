@@ -51,50 +51,68 @@ type Profile = {
   [key: string]: any;
 };
 
-async function getRecentUsers() {
-  const supabase = await createClient();
-  
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(5);
+async function getRecentUsers(): Promise<Profile[]> {
+  try {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(5);
 
-  if (error) {
-    console.error("Error fetching recent users:", error);
+    if (error) {
+      console.error("Error fetching recent users:", error);
+      return [];
+    }
+
+    return (data as Profile[]) || [];
+  } catch (error) {
+    console.error("Error in getRecentUsers:", error);
     return [];
   }
-
-  return (data as Profile[]) || [];
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Get user profile
   let userName = "Gebruiker";
   let kycCompleted = false;
-  
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name, kyc_status")
-      .eq("id", user.id)
-      .single();
+  let recentUsers: Profile[] = [];
 
-    if (profile) {
-      userName = profile.full_name || "Gebruiker";
-      kycCompleted = profile.kyc_status === "verified";
+  try {
+    const supabase = await createClient();
+    
+    // Get current user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+      console.error("Error getting user:", userError);
     }
-  }
 
-  // Get recent users
-  const recentUsers = await getRecentUsers();
+    // Get user profile
+    if (user) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("full_name, kyc_status")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError) {
+        console.error("Error getting profile:", profileError);
+      } else if (profile) {
+        userName = profile.full_name || "Gebruiker";
+        kycCompleted = profile.kyc_status === "verified";
+      }
+    }
+
+    // Get recent users
+    recentUsers = await getRecentUsers();
+  } catch (error) {
+    console.error("Dashboard error:", error);
+    // Continue with default values
+  }
 
   return (
     <div className="space-y-6">
