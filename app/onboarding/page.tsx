@@ -14,26 +14,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { UploadCloud, ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, CheckCircle2, Shield, Loader2 } from "lucide-react";
+import { submitOnboarding } from "./actions";
 
 const TOTAL_STEPS = 3;
 
 export default function OnboardingPage() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
 
-  // Step 1: Persoonsgegevens
+  // Step 1: Identity
   const [formData, setFormData] = useState({
-    voornaam: "",
-    achternaam: "",
     telefoonnummer: "",
     adres: "",
+    postcode: "",
+    woonplaats: "",
   });
 
-  // Step 2: Document upload
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
+  // Step 2: Fourthline KYC Mock
+  const [kycCheckCompleted, setKycCheckCompleted] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Step 3: Compliance
   const [vermogensherkomst, setVermogensherkomst] = useState("");
@@ -44,20 +43,20 @@ export default function OnboardingPage() {
 
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.voornaam.trim()) newErrors.voornaam = "Voornaam is verplicht";
-    if (!formData.achternaam.trim())
-      newErrors.achternaam = "Achternaam is verplicht";
     if (!formData.telefoonnummer.trim())
       newErrors.telefoonnummer = "Telefoonnummer is verplicht";
     if (!formData.adres.trim()) newErrors.adres = "Adres is verplicht";
+    if (!formData.postcode.trim()) newErrors.postcode = "Postcode is verplicht";
+    if (!formData.woonplaats.trim())
+      newErrors.woonplaats = "Woonplaats is verplicht";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const validateStep2 = () => {
-    if (!selectedFile) {
-      setErrors({ document: "Upload een paspoort document" });
+    if (!kycCheckCompleted) {
+      setErrors({ kyc: "U moet eerst uw identiteit verifiëren" });
       return false;
     }
     setErrors({});
@@ -96,46 +95,29 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleSubmit = () => {
-    // TODO: Server-side validatie en opslag via Supabase
-    console.log("Submitting:", {
-      formData,
-      selectedFile,
-      vermogensherkomst,
-      verklaringAccepted,
+  const handleSubmit = async () => {
+    const result = await submitOnboarding({
+      telefoonnummer: formData.telefoonnummer,
+      adres: formData.adres,
+      postcode: formData.postcode,
+      woonplaats: formData.woonplaats,
+      vermogensherkomst: vermogensherkomst,
     });
-    // Voor nu: redirect naar home
-    router.push("/");
-  };
 
-  const handleFileSelect = (file: File) => {
-    if (file.type.startsWith("image/") || file.type === "application/pdf") {
-      setSelectedFile(file);
-      setErrors({});
-    } else {
-      setErrors({ document: "Alleen afbeeldingen en PDF's zijn toegestaan" });
+    if (result?.error) {
+      setErrors({ submit: result.error });
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+  const handleStartVerification = async () => {
+    setIsVerifying(true);
+    setErrors({});
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
+    // Simulate Fourthline connection (3 seconds)
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileSelect(file);
-  };
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleFileSelect(file);
+    setKycCheckCompleted(true);
+    setIsVerifying(false);
   };
 
   const progressPercentage = (currentStep / TOTAL_STEPS) * 100;
@@ -165,58 +147,16 @@ export default function OnboardingPage() {
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Stap 1: Persoonsgegevens */}
+          {/* Stap 1: Identity */}
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-foreground">
-                  Persoonsgegevens
+                  Identiteit
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Vul uw persoonlijke gegevens in voor de KYC verificatie.
+                  Vul uw contactgegevens in.
                 </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="voornaam" className="text-foreground">
-                    Voornaam *
-                  </Label>
-                  <Input
-                    id="voornaam"
-                    value={formData.voornaam}
-                    onChange={(e) =>
-                      setFormData({ ...formData, voornaam: e.target.value })
-                    }
-                    className={errors.voornaam ? "border-destructive" : ""}
-                    placeholder="Jan"
-                  />
-                  {errors.voornaam && (
-                    <p className="text-xs text-destructive">
-                      {errors.voornaam}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="achternaam" className="text-foreground">
-                    Achternaam *
-                  </Label>
-                  <Input
-                    id="achternaam"
-                    value={formData.achternaam}
-                    onChange={(e) =>
-                      setFormData({ ...formData, achternaam: e.target.value })
-                    }
-                    className={errors.achternaam ? "border-destructive" : ""}
-                    placeholder="Jansen"
-                  />
-                  {errors.achternaam && (
-                    <p className="text-xs text-destructive">
-                      {errors.achternaam}
-                    </p>
-                  )}
-                </div>
               </div>
 
               <div className="space-y-2">
@@ -254,82 +194,125 @@ export default function OnboardingPage() {
                     setFormData({ ...formData, adres: e.target.value })
                   }
                   className={errors.adres ? "border-destructive" : ""}
-                  placeholder="Straatnaam 123, 1234 AB Amsterdam"
+                  placeholder="Straatnaam 123"
                 />
                 {errors.adres && (
                   <p className="text-xs text-destructive">{errors.adres}</p>
                 )}
               </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="postcode" className="text-foreground">
+                    Postcode *
+                  </Label>
+                  <Input
+                    id="postcode"
+                    value={formData.postcode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, postcode: e.target.value })
+                    }
+                    className={errors.postcode ? "border-destructive" : ""}
+                    placeholder="1234 AB"
+                  />
+                  {errors.postcode && (
+                    <p className="text-xs text-destructive">
+                      {errors.postcode}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="woonplaats" className="text-foreground">
+                    Woonplaats *
+                  </Label>
+                  <Input
+                    id="woonplaats"
+                    value={formData.woonplaats}
+                    onChange={(e) =>
+                      setFormData({ ...formData, woonplaats: e.target.value })
+                    }
+                    className={errors.woonplaats ? "border-destructive" : ""}
+                    placeholder="Amsterdam"
+                  />
+                  {errors.woonplaats && (
+                    <p className="text-xs text-destructive">
+                      {errors.woonplaats}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
-          {/* Stap 2: KYC Documentatie */}
+          {/* Stap 2: Identificatie (Fourthline Mock) */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-foreground">
-                  KYC Documentatie
+                  Identificatie
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Upload een scan of foto van uw paspoort voor verificatie.
+                  Verifieer uw identiteit via onze partner Fourthline.
                 </p>
               </div>
 
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`relative border-2 border-dashed rounded-lg p-8 transition-colors ${
-                  isDragging
-                    ? "border-primary bg-primary/10"
-                    : "border-border bg-secondary/30"
-                }`}
-              >
-                <input
-                  type="file"
-                  id="file-upload"
-                  className="hidden"
-                  accept="image/*,.pdf"
-                  onChange={handleFileInput}
-                />
-                <label
-                  htmlFor="file-upload"
-                  className="flex flex-col items-center justify-center cursor-pointer space-y-4"
-                >
-                  {selectedFile ? (
-                    <>
-                      <CheckCircle2 className="h-12 w-12 text-primary" />
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-foreground">
-                          {selectedFile.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Klik om een ander bestand te selecteren
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <UploadCloud className="h-12 w-12 text-muted-foreground" />
-                      <div className="text-center">
-                        <p className="text-sm font-medium text-foreground">
-                          Sleep uw paspoort hierheen
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          of klik om te bladeren
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          PNG, JPG, PDF (max. 10MB)
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </label>
-              </div>
+              <Card className="border-border bg-card">
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center justify-center space-y-6">
+                    {!kycCheckCompleted && !isVerifying && (
+                      <>
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                          <Shield className="h-8 w-8 text-primary" />
+                        </div>
+                        <div className="text-center space-y-2">
+                          <h4 className="text-lg font-semibold text-foreground">
+                            Identiteit Verifiëren
+                          </h4>
+                          <p className="text-sm text-muted-foreground max-w-md">
+                            We gebruiken onze partner Fourthline om uw identiteit
+                            veilig te controleren.
+                          </p>
+                        </div>
+                        <Button
+                          onClick={handleStartVerification}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90"
+                          size="lg"
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          Start Verificatie
+                        </Button>
+                      </>
+                    )}
 
-              {errors.document && (
+                    {isVerifying && (
+                      <>
+                        <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                        <div className="text-center space-y-2">
+                          <p className="text-sm font-medium text-foreground">
+                            Verbinding maken met Fourthline...
+                          </p>
+                        </div>
+                      </>
+                    )}
+
+                    {kycCheckCompleted && !isVerifying && (
+                      <>
+                        <CheckCircle2 className="h-12 w-12 text-primary" />
+                        <div className="text-center space-y-2">
+                          <p className="text-sm font-medium text-foreground">
+                            Identiteit Geverifieerd
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {errors.kyc && (
                 <p className="text-xs text-destructive text-center">
-                  {errors.document}
+                  {errors.kyc}
                 </p>
               )}
             </div>
@@ -350,7 +333,7 @@ export default function OnboardingPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="vermogensherkomst" className="text-foreground">
-                  Wat is de herkomst van uw vermogen? *
+                  Herkomst Vermogen *
                 </Label>
                 <Select
                   value={vermogensherkomst}
@@ -390,8 +373,7 @@ export default function OnboardingPage() {
                     htmlFor="verklaring"
                     className="text-sm text-foreground leading-relaxed cursor-pointer"
                   >
-                    Ik verklaar dat ik investeer voor eigen rekening en risico
-                    (Execution Only). *
+                    Ik ga akkoord met de voorwaarden *
                   </label>
                 </div>
                 {errors.verklaring && (
@@ -417,6 +399,7 @@ export default function OnboardingPage() {
             <Button
               onClick={handleNext}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
+              disabled={isVerifying}
             >
               {currentStep === TOTAL_STEPS
                 ? "Afronden & Indienen"

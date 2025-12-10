@@ -14,6 +14,7 @@ export async function approveKYC(userId: string) {
 
   if (!user) {
     redirect("/login");
+    return;
   }
 
   const { data: profile } = await supabase
@@ -24,6 +25,7 @@ export async function approveKYC(userId: string) {
 
   if (profile?.role !== "admin") {
     redirect("/dashboard");
+    return;
   }
 
   // Update KYC status
@@ -33,10 +35,12 @@ export async function approveKYC(userId: string) {
     .eq("id", userId);
 
   if (error) {
-    return { error: error.message };
+    console.error("Error approving KYC:", error.message);
+    // Revalidate anyway to refresh the page
+    revalidatePath("/admin");
+    return;
   }
 
   revalidatePath("/admin");
-  return { success: true };
 }
 
